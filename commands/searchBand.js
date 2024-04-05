@@ -1,12 +1,7 @@
 const axios = require('axios')
 const { Markup } = require('telegraf')
+const { axiosOptions } = require('../utils/const')
 
-const axiosOptions = {
-  timeout: 3000,
-  headers: {
-    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 YaBrowser/24.1.0.0 Safari/537.36'
-  }
-}
 
 exports.searchBand = async (ctx) => {
   const bandName = ctx.update.message.text
