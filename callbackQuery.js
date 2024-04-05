@@ -1,9 +1,12 @@
 const cheerio = require('cheerio')
 const { Markup } = require('telegraf')
+const _ = require('lodash')
 
 const { getBand, getBandDiscography } = require('./commands/searchBand')
 const { getAlbumbyId } = require('./commands/searchAlbum')
 const { countryFlagsMapper, bandStatusMapper } = require('./utils/const')
+
+const NO_IMAGE_URL = 'https://business-click.it/images/portfolio/cappelledelcommiatofirenze.png'
 
 exports.callbackQuery = async (ctx) => {
   const data = ctx.update.callback_query.data.split('|')
@@ -37,20 +40,20 @@ async function answerWithAlbum(ctx, albumId) {
 
 async function answerWithBand(ctx, bandId) {
   const { data } = await getBand(bandId)
-  const { name, genre, country, location, themes, status, label, formYear, photoUrl, logoUrl } = parseBandInfo(data)
+  const { name, genre, country, location, themes, status, label, formYear, yearsActive, photoUrl, logoUrl } = parseBandInfo(data)
   const discography = await parseDiscography(bandId)
 
-  const inlineKeyboard = buildKeyboardDiscography(discography)
+  const inlineKeyboard = await buildKeyboardDiscography(ctx, discography)
 
   const band = {
-    name, genre, country, location, themes, status, label, formYear, photoUrl, logoUrl
+    name, genre, country, location, themes, status, label, formYear, yearsActive, photoUrl, logoUrl
   }
 
   replyBandWithPhoto(ctx, band, inlineKeyboard)
 }
 
 function replyAlbumWithPhoto(ctx, album) {
-  const cover = album.cover ? album.cover : 'https://business-click.it/images/portfolio/cappelledelcommiatofirenze.png'
+  const cover = album.cover ? album.cover : NO_IMAGE_URL
   const inlineKeyboard = [
     [Markup.button.callback(`⬅️ к альбомам`, `getBand|${album.bandId}`),]
   ]
@@ -73,7 +76,14 @@ ${album.tracklist.join('')}
 }
 
 function replyBandWithPhoto(ctx, band, inlineKeyboard) {
-  const bandPhoto = band.photoUrl ? band.photoUrl : band.logoUrl
+  let bandPhoto = ''
+  if (band.photoUrl) {
+    bandPhoto = band.photoUrl
+  } else if (band.logoUrl) {
+    bandPhoto = band.logoUrl
+  } else if (!band.photoUrl && !band.logoUrl) {
+    bandPhoto = NO_IMAGE_URL
+  }
   ctx.replyWithPhoto({ url: bandPhoto }, {
     caption:
       `
@@ -82,6 +92,7 @@ function replyBandWithPhoto(ctx, band, inlineKeyboard) {
 <b>Страна</b>: ${countryFlagsMapper[band.country]} ${band.country} (${band.location})
 <b>Темы текстов</b>: ${band.themes}
 <b>Год образования</b>: ${band.formYear}
+<b>Годы активности</b>: ${band.yearsActive}
 <b>Статус</b>: ${bandStatusMapper[band.status]}
 <b>Лейбл</b>: ${band.label}
 `
@@ -93,14 +104,17 @@ function replyBandWithPhoto(ctx, band, inlineKeyboard) {
   })
 }
 
-function buildKeyboardDiscography(discography) {
+async function buildKeyboardDiscography(ctx, discography) {
   const inlineKeyboard = []
-  discography.forEach(album => {
-    inlineKeyboard.push(
-      [Markup.button.callback(`[${album.year}] ${album.name} - ${album.type}`, `getAlbum|${album.id}`),]
-    )
+  _.chunk(discography, 2).forEach((chunk) => {
+    const temp = []
+    chunk.map((album) => {
+      temp.push(Markup.button.callback(`[${album.year}] ${album.name} - ${album.type}`, `getAlbum|${album.id}`))
+    })
+    inlineKeyboard.push(temp)
   })
 
+  // console.log(inlineKeyboard)
   return inlineKeyboard
 }
 
@@ -175,3 +189,4 @@ exports.parseBandInfo = parseBandInfo
 exports.parseDiscography = parseDiscography
 exports.buildKeyboardDiscography = buildKeyboardDiscography
 exports.replyBandWithPhoto = replyBandWithPhoto
+exports.answerWithBand = answerWithBand
