@@ -51,7 +51,8 @@ exports.bandStatusMapper = {
   'Changed name': 'Сменили название',
   Active: 'Активны',
   'Split-up': 'Распались',
-  'Unknown': 'Неизвестно',
+  Unknown: 'Неизвестно',
+  'On hold': 'В заморозке',
 }
 
 exports.axiosOptions = {

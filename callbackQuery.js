@@ -26,10 +26,10 @@ exports.callbackQuery = async (ctx) => {
 
 async function answerWithAlbum(ctx, albumId) {
   const { data } = await getAlbumbyId(albumId)
-  const { bandName, albumName, type, releaseDate, label, format, limit, cover, tracklist } = parseAlbumInfo(data)
+  const { bandId, bandName, albumName, type, releaseDate, label, format, limit, cover, tracklist } = parseAlbumInfo(data)
 
   const album = {
-    bandName, albumName, type, releaseDate, label, format, limit, cover, tracklist
+    bandId, bandName, albumName, type, releaseDate, label, format, limit, cover, tracklist
   }
 
   replyAlbumWithPhoto(ctx, album)
@@ -37,13 +37,13 @@ async function answerWithAlbum(ctx, albumId) {
 
 async function answerWithBand(ctx, bandId) {
   const { data } = await getBand(bandId)
-  const { name, genre, country, location, themes, status, label, formYear, photoUrl } = parseBandInfo(data)
+  const { name, genre, country, location, themes, status, label, formYear, photoUrl, logoUrl } = parseBandInfo(data)
   const discography = await parseDiscography(bandId)
 
   const inlineKeyboard = buildKeyboardDiscography(discography)
 
   const band = {
-    name, genre, country, location, themes, status, label, formYear, photoUrl
+    name, genre, country, location, themes, status, label, formYear, photoUrl, logoUrl
   }
 
   replyBandWithPhoto(ctx, band, inlineKeyboard)
@@ -51,6 +51,9 @@ async function answerWithBand(ctx, bandId) {
 
 function replyAlbumWithPhoto(ctx, album) {
   const cover = album.cover ? album.cover : 'https://business-click.it/images/portfolio/cappelledelcommiatofirenze.png'
+  const inlineKeyboard = [
+    [Markup.button.callback(`⬅️ к альбомам`, `getBand|${album.bandId}`),]
+  ]
   ctx.replyWithPhoto({ url: cover }, {
     caption:
       `
@@ -62,12 +65,16 @@ function replyAlbumWithPhoto(ctx, album) {
 <b>Лейбл</b>: ${album.label}
 <b>Треклист</b>:
 ${album.tracklist.join('')}
-`, parse_mode: 'HTML'
+`, parse_mode: 'HTML', reply_markup: {
+      resize_keyboard: true,
+      inline_keyboard: inlineKeyboard,
+    }
   })
 }
 
 function replyBandWithPhoto(ctx, band, inlineKeyboard) {
-  ctx.replyWithPhoto({ url: band.photoUrl }, {
+  const bandPhoto = band.photoUrl ? band.photoUrl : band.logoUrl
+  ctx.replyWithPhoto({ url: bandPhoto }, {
     caption:
       `
 <b>Группа</b>: ${band.name}
@@ -80,6 +87,7 @@ function replyBandWithPhoto(ctx, band, inlineKeyboard) {
 `
     , parse_mode: 'HTML', reply_markup: {
       resize_keyboard: true,
+      extra: true,
       inline_keyboard: inlineKeyboard,
     }
   })
@@ -98,6 +106,7 @@ function buildKeyboardDiscography(discography) {
 
 function parseAlbumInfo(html) {
   const $ = cheerio.load(html)
+  const bandId = $('.band_name a').attr('href').split('/').pop()
   const bandName = $('.band_name a').text()
   const albumName = $('.album_name a').text()
   const type = $('#album_info .float_left dd').eq(0).text()
@@ -108,12 +117,15 @@ function parseAlbumInfo(html) {
   const cover = $('#cover').attr('href')
   const tracklistHTML = $('table.table_lyrics tr').not('.displayNone')
   const tracklist = []
-  for (let index = 0; index < tracklistHTML.length - 1; index++) {
+  for (let index = 0; index < tracklistHTML.length; index++) {
     const track = tracklistHTML.eq(index)
-    tracklist.push(`${track.children().eq(0).text().trim()} ${track.children().eq(1).text().trim()} (${track.children().eq(2).text().trim()})\n`)
+    if (index === tracklistHTML.length - 1) {
+      tracklist.push(`<b>Общее время</b>: ${track.children().eq(1).text().trim()}`)
+    } else {
+      tracklist.push(`${track.children().eq(0).text().trim()} ${track.children().eq(1).text().trim()} (${track.children().eq(2).text().trim()})\n`)
+    }
   }
-
-  return { bandName, albumName, type, releaseDate, label, format, limit, cover, tracklist }
+  return { bandId, bandName, albumName, type, releaseDate, label, format, limit, cover, tracklist }
 }
 
 function parseBandInfo(html) {
