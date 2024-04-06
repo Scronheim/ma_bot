@@ -50,6 +50,10 @@ exports.countryFlagsMapper = {
   Hungary: '🇭🇺',
   Philippines: '🇵🇭',
   Azerbaijan: '🇦🇿',
+  Mongolia: '🇲🇳',
+  Taiwan: '🇹🇼',
+  'Korea, South': '🇰🇷',
+  'Korea, North': '🇰🇵',
 }
 
 exports.bandStatusMapper = {

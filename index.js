@@ -3,6 +3,7 @@ const LocalSession = require('telegraf-session-local')
 const { GenericMenu } = require('telegraf-menu')
 
 const { callbackQuery } = require('./callbackQuery')
+const { initSession } = require('./middlewares/initSession')
 
 const { start } = require('./commands/start')
 //const { randomBand } = require('./commands/random')
@@ -24,6 +25,7 @@ const startBot = async () => {
     //======= MIDDLEWARES =======
     bot.use(session.middleware())
     bot.use(GenericMenu.middleware())
+    bot.use(initSession)
     //======= /MIDDLEWARES =======
 
     //======= COMMANDS =======

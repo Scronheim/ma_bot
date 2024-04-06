@@ -3,10 +3,14 @@
     {
       "id": "423754317:423754317",
       "data": {
+        "worldSide": "scandinavia",
+        "country": "NO",
+        "genre": "",
+        "subGenre": "",
         "keyboardMenu": {
           "genericConfig": {
             "action": "random",
-            "message": "\nВыберите фильтры\nРегион: Балканы\nСтрана: Греция\nЖанр: Atmospheric death\n",
+            "message": "\nВыберите фильтры\nРегион: Скандинавия\nСтрана: Норвегия\nЖанр: Не выбрано\n",
             "filters": [
               [
                 {
@@ -39,7 +43,7 @@
           "deleted": false,
           "config": {
             "action": "random",
-            "message": "\nВыберите фильтры\nРегион: Балканы\nСтрана: Греция\nЖанр: Atmospheric death\n",
+            "message": "\nВыберите фильтры\nРегион: Скандинавия\nСтрана: Норвегия\nЖанр: Не выбрано\n",
             "filters": [
               [
                 {
@@ -66,14 +70,8 @@
             ],
             "replaceable": true
           },
-          "messageId": 1051,
-          "state": "searchRandomBand"
-        },
-        "worldSide": "balkans",
-        "country": "GR",
-        "genre": "death",
-        "subGenre": "atmosphericDeath",
-        "isRandom": true
+          "messageId": 1097
+        }
       }
     }
   ]
