@@ -1,10 +1,16 @@
 const cheerio = require('cheerio')
+const axios = require('axios')
 const { Markup } = require('telegraf')
 const _ = require('lodash')
 
 const { getBand, getBandDiscography } = require('./commands/searchBand')
 const { getAlbumbyId } = require('./commands/searchAlbum')
-const { countryFlagsMapper, bandStatusMapper } = require('./utils/const')
+
+const { toggleLike, checkLikedAlbum } = require('./db/like')
+
+const { genres } = require('./utils/const')
+const { getFormattedBandText, prepareNames } = require('./utils/helpers')
+
 
 const NO_IMAGE_URL = 'https://business-click.it/images/portfolio/cappelledelcommiatofirenze.png'
 
@@ -15,10 +21,16 @@ exports.callbackQuery = async (ctx) => {
 
   switch (action) {
     case 'getBand':
-      await answerWithBand(ctx, firstParameter)
+      await answerWithBand(ctx, firstParameter, false)
       break
     case 'getAlbum':
       await answerWithAlbum(ctx, firstParameter)
+      break
+    case 'repeatRandomBand':
+      await answerWithRepeatedRandomBand(ctx)
+      break
+    case 'like':
+      await toggleLike(ctx, firstParameter)
       break
     default:
       break
@@ -27,23 +39,45 @@ exports.callbackQuery = async (ctx) => {
   await ctx.answerCbQuery()
 }
 
+async function answerWithRepeatedRandomBand(ctx) {
+  const { randomBand } = await queryRandomBand(ctx)
+  const bandId = randomBand[0].split('/')[5].split('">')[0]
+  await answerWithBand(ctx, bandId)
+}
+
+async function queryRandomBand(ctx) {
+  const genre = ctx.session.subGenre === '' ? '' : genres[ctx.session.subGenre]
+  const countryCode = ctx.session.country
+  const bandStatus = ctx.session.bandStatus
+  const iTotalRecords = await firstRequest(genre, countryCode, bandStatus)
+  const totalRecords = Math.floor(Math.random() * (1 + iTotalRecords - 1)) + 1
+  const randomBand = await recieveRandomBand(genre, countryCode, bandStatus, totalRecords)
+
+  return { genre, countryCode, iTotalRecords, randomBand }
+}
+
 async function answerWithAlbum(ctx, albumId) {
   const { data } = await getAlbumbyId(albumId)
   const { bandId, bandName, albumName, type, releaseDate, label, format, limit, cover, tracklist } = parseAlbumInfo(data)
 
   const album = {
-    bandId, bandName, albumName, type, releaseDate, label, format, limit, cover, tracklist
+    bandId, albumId, bandName, albumName, type, releaseDate, label, format, limit, cover, tracklist
   }
 
-  replyAlbumWithPhoto(ctx, album)
+  const albumExistInCurrentChatId = await checkLikedAlbum(ctx, albumId)
+
+  replyAlbumWithPhoto(ctx, album, albumExistInCurrentChatId)
 }
 
-async function answerWithBand(ctx, bandId) {
+
+async function answerWithBand(ctx, bandId, isRandom = true) {
   const { data } = await getBand(bandId)
   const { name, genre, country, location, themes, status, label, formYear, yearsActive, photoUrl, logoUrl } = parseBandInfo(data)
   const discography = await parseDiscography(bandId)
 
   const inlineKeyboard = await buildKeyboardDiscography(ctx, discography)
+
+  if (isRandom) inlineKeyboard.push([Markup.button.callback(`Повторить`, `repeatRandomBand`)])
 
   const band = {
     name, genre, country, location, themes, status, label, formYear, yearsActive, photoUrl, logoUrl
@@ -52,11 +86,21 @@ async function answerWithBand(ctx, bandId) {
   replyBandWithPhoto(ctx, band, inlineKeyboard)
 }
 
-function replyAlbumWithPhoto(ctx, album) {
+function replyAlbumWithPhoto(ctx, album, albumExistInCurrentChatId) {
   const cover = album.cover ? album.cover : NO_IMAGE_URL
   const inlineKeyboard = [
-    [Markup.button.callback(`⬅️ к альбомам`, `getBand|${album.bandId}`),]
+    [Markup.button.callback(`⬅️ к альбомам`, `getBand|${album.bandId}`)],
   ]
+
+  if (albumExistInCurrentChatId) {
+    inlineKeyboard.push([Markup.button.callback(`👎 не нравится`, `like|${album.albumId}`)])
+  } else {
+    inlineKeyboard.push([Markup.button.callback(`👍 нравится`, `like|${album.albumId}`)])
+  }
+  if (album.tracklist.length > 22) {
+    album.tracklist.splice(22, album.tracklist.length - 1,
+      `\nВесь треклист не влез в ограничения телеграмма, полная версия тут \nhttps://www.metal-archives.com/albums/${prepareNames(album.bandName)}/${prepareNames(album.albumName)}/${album.albumId}`)
+  }
   ctx.replyWithPhoto({ url: cover }, {
     caption:
       `
@@ -85,23 +129,22 @@ function replyBandWithPhoto(ctx, band, inlineKeyboard) {
     bandPhoto = NO_IMAGE_URL
   }
   ctx.replyWithPhoto({ url: bandPhoto }, {
-    caption:
-      `
-<b>Группа</b>: ${band.name}
-<b>Жанр</b>: ${band.genre}
-<b>Страна</b>: ${countryFlagsMapper[band.country]} ${band.country} (${band.location})
-<b>Темы текстов</b>: ${band.themes}
-<b>Год образования</b>: ${band.formYear}
-<b>Годы активности</b>: ${band.yearsActive}
-<b>Статус</b>: ${bandStatusMapper[band.status]}
-<b>Лейбл</b>: ${band.label}
-`
-    , parse_mode: 'HTML', reply_markup: {
+    caption: getFormattedBandText(band), parse_mode: 'HTML', reply_markup: {
       resize_keyboard: true,
       extra: true,
       inline_keyboard: inlineKeyboard,
     }
   })
+}
+
+async function recieveRandomBand(genre, countryCode, bandStatus, totalRecords) {
+  const { data } = await axios.get(`https://www.metal-archives.com/search/ajax-advanced/searching/bands/?bandName=&genre=${genre}&country=${countryCode}&yearCreationFrom=&yearCreationTo=&bandNotes=&status=${bandStatus}&themes=&location=&bandLabelName=&sEcho=1&iColumns=3&sColumns=&iDisplayStart=${totalRecords}&iDisplayLength=1`)
+  return data.aaData[0]
+}
+
+async function firstRequest(genre, countryCode, bandStatus) {
+  const { data } = await axios.get(`https://www.metal-archives.com/search/ajax-advanced/searching/bands/?bandName=&genre=${genre}&country=${countryCode}&yearCreationFrom=&yearCreationTo=&bandNotes=&status=${bandStatus}&themes=&location=&bandLabelName=&sEcho=1&iColumns=3&sColumns=&iDisplayStart=&iDisplayLength=1`)
+  return data.iTotalRecords
 }
 
 async function buildKeyboardDiscography(ctx, discography) {
@@ -171,9 +214,9 @@ async function parseDiscography(bandId) {
   for (let index = 0; index < albums.length; index++) {
     const album = albums.eq(index)
     const albumId = album.children().eq(0).children().eq(0).attr('href').split('/').pop()
-    const albumName = album.children().eq(0).text()
-    const albumType = album.children().eq(1).text()
-    const albumYear = album.children().eq(2).text()
+    const albumName = album.children().eq(0).text() || ''
+    const albumType = album.children().eq(1).text() || ''
+    const albumYear = album.children().eq(2).text() || ''
     if (albumName) discography.push({
       id: albumId,
       name: albumName,
@@ -190,3 +233,5 @@ exports.parseDiscography = parseDiscography
 exports.buildKeyboardDiscography = buildKeyboardDiscography
 exports.replyBandWithPhoto = replyBandWithPhoto
 exports.answerWithBand = answerWithBand
+exports.answerWithAlbum = answerWithAlbum
+exports.queryRandomBand = queryRandomBand

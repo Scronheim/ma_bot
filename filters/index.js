@@ -1,24 +1,15 @@
 const { KeyboardButton } = require('telegraf-menu')
 
+const { bandStatusMapper } = require('../utils/const')
+
 exports.randomFilters = [
   [
     new KeyboardButton('Страна', 'worldSide'),
     new KeyboardButton('Жанр', 'genre'),
+    new KeyboardButton('Статус', 'status'),
   ],
   [
-    new KeyboardButton('Запустить', 'searchRandomBand'),
-  ],
-  [
-    new KeyboardButton('Очистить фильтр', 'clearRandomFilter'),
-  ]
-]
-
-exports.foundedRandomBandFilters = [
-  [
-    new KeyboardButton('Повторить', 'searchRandomBand'),
-  ],
-  [
-    new KeyboardButton('Изменить фильтры', 'random'),
+    new KeyboardButton('Случайная группа', 'searchRandomBand'),
   ],
   [
     new KeyboardButton('Очистить фильтр', 'clearRandomFilter'),
@@ -90,6 +81,19 @@ exports.subGenreFilters = {
   ],
 }
 
+exports.bandStatusFilters = [
+  [
+    new KeyboardButton(bandStatusMapper['Active'], 1),
+    new KeyboardButton(bandStatusMapper['On hold'], 2),
+    new KeyboardButton(bandStatusMapper['Split-up'], 3),
+  ],
+  [
+    new KeyboardButton(bandStatusMapper['Unknown'], 4),
+    new KeyboardButton(bandStatusMapper['Changed name'], 5),
+    new KeyboardButton(bandStatusMapper['Disputed'], 6),
+  ],
+]
+
 exports.worldSidesFilters = [
   [
     new KeyboardButton('Скандинавия', 'scandinavia'),
@@ -105,7 +109,7 @@ exports.worldSidesFilters = [
     new KeyboardButton('Африка', 'africa'),
     new KeyboardButton('СНГ', 'cis'),
     new KeyboardButton('Австралия', 'australia'),
-  ]
+  ],
 ]
 
 exports.countriesFilters = {

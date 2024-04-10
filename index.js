@@ -1,4 +1,5 @@
 const { Telegraf } = require('telegraf')
+const { message } = require('telegraf/filters')
 const LocalSession = require('telegraf-session-local')
 const { GenericMenu } = require('telegraf-menu')
 
@@ -6,14 +7,24 @@ const { callbackQuery } = require('./callbackQuery')
 const { initSession } = require('./middlewares/initSession')
 
 const { start } = require('./commands/start')
-//const { randomBand } = require('./commands/random')
 const { aboutMe } = require('./commands/aboutMe')
 const { searchBand } = require('./commands/searchBand')
 
-const { initRandomMenu, initWorldSidesMenu, clearRandomFilter, searchRandomBand, initGenreMenu } = require('./commands/random')
+const {
+    initRandomMenu, initWorldSidesMenu, initCountryMenu,
+    clearRandomFilter, initSubGenreMenu, initGenreMenu,
+    initStatusMenu,
+} = require('./commands/random')
 
 const token = process.env.TELEGRAM_BOT_TOKEN // https://t.me/EncyclopaediaMetallum_bot
 const session = new LocalSession({ database: 'local.db.json' })
+const db = require('./db/index.schema')
+
+db.mongoose.connect('mongodb://localhost:27017/ma_bot', {
+    authSource: 'admin',
+    user: 'scronheim',
+    pass: 'it!admin*0',
+})
 
 const startBot = async () => {
     const bot = new Telegraf(token)
@@ -40,21 +51,23 @@ const startBot = async () => {
     bot.command('genre', initGenreMenu)
     bot.action(new RegExp('genre'), GenericMenu.onAction(ctx => ctx.session.keyboardMenu, initGenreMenu))
 
+    bot.command('subGenre', initSubGenreMenu)
+    bot.action(new RegExp('subGenre'), GenericMenu.onAction(ctx => ctx.session.keyboardMenu, initSubGenreMenu))
+
+    bot.command('status', initStatusMenu)
+    bot.action(new RegExp('status'), GenericMenu.onAction(ctx => ctx.session.keyboardMenu, initStatusMenu))
+
     bot.command('clearRandomFilter', clearRandomFilter)
     bot.action(new RegExp('clearRandomFilter'), GenericMenu.onAction(ctx => ctx.session.keyboardMenu, clearRandomFilter))
 
-    bot.command('country', initRandomMenu)
-    bot.action(new RegExp('country'), GenericMenu.onAction(ctx => ctx.session.keyboardMenu, initRandomMenu))
-
-    bot.command('searchRandomBand', searchRandomBand)
-    bot.action(new RegExp('searchRandomBand'), GenericMenu.onAction(ctx => ctx.session.keyboardMenu, searchRandomBand))
+    bot.command('country', initCountryMenu)
+    bot.action(new RegExp('country'), GenericMenu.onAction(ctx => ctx.session.keyboardMenu, initCountryMenu))
 
     bot.command('about', aboutMe)
-    bot.on('text', searchBand)
+
+    bot.on(message('text'), searchBand)
     bot.on('callback_query', callbackQuery)
     //======= /COMMANDS =======
-
-    // bot.on('text', start)
 
     console.log('Telegram bot started')
     await bot.launch()

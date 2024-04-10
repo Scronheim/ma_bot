@@ -1,13 +1,11 @@
 const { RegularMenu, RadioMenu } = require('telegraf-menu')
-const axios = require('axios')
 
-const { randomFilters, worldSidesFilters, countriesFilters, genreFilters, subGenreFilters } = require('../filters')
-const { genres } = require('../utils/const')
+const { randomFilters, worldSidesFilters, countriesFilters, genreFilters, subGenreFilters, bandStatusFilters } = require('../filters')
 const { formatSelectedFilters } = require('../utils/helpers')
-const { answerWithBand } = require('../callbackQuery')
+const { answerWithBand, queryRandomBand } = require('../callbackQuery')
 
 function initRandomMenu(ctx) {
-  new RegularMenu(
+  return new RegularMenu(
     {
       action: 'random',
       message: formatSelectedFilters(ctx),
@@ -21,23 +19,46 @@ function initRandomMenu(ctx) {
             return initWorldSidesMenu(changeCtx)
           case 'genre':
             return initGenreMenu(changeCtx)
-          case 'clearRandomFilter':
-            return clearRandomFilter(changeCtx)
+          case 'status':
+            return initStatusMenu(changeCtx)
           case 'searchRandomBand':
             return searchRandomBand(changeCtx)
+          case 'clearRandomFilter':
+            return clearRandomFilter(changeCtx)
         }
       },
     },
   ).sendMenu(ctx)
 }
 
+function initStatusMenu(ctx) {
+  return new RadioMenu(
+    {
+      action: 'status',
+      message: 'Выберите статус группы',
+      filters: bandStatusFilters,
+      replaceable: true,
+      state: ctx.session.bandStatus,
+      menuGetter: (menuCtx) => menuCtx.session.keyboardMenu,
+      menuSetter: (menuCtx, menu) => menuCtx.session.keyboardMenu = menu,
+      beforeChange(changeCtx, bandStatus) {
+        changeCtx.session.bandStatus = bandStatus
+      },
+      onChange(submitCtx) {
+        initRandomMenu(submitCtx)
+      },
+    },
+  ).sendMenu(ctx)
+}
+
 function initWorldSidesMenu(ctx) {
-  new RadioMenu(
+  return new RadioMenu(
     {
       action: 'worldSide',
       message: 'Выберите регион для уточнения страны',
       filters: worldSidesFilters,
       replaceable: true,
+      state: ctx.session.worldSide,
       menuGetter: (menuCtx) => menuCtx.session.keyboardMenu,
       menuSetter: (menuCtx, menu) => menuCtx.session.keyboardMenu = menu,
       beforeChange(changeCtx, worldSide) {
@@ -51,12 +72,13 @@ function initWorldSidesMenu(ctx) {
 }
 
 function initCountryMenu(ctx) {
-  new RadioMenu(
+  return new RadioMenu(
     {
       action: 'country',
       message: 'Выберите страну',
       filters: countriesFilters[ctx.session.worldSide],
       replaceable: true,
+      state: ctx.session.country,
       menuGetter: (menuCtx) => menuCtx.session.keyboardMenu,
       menuSetter: (menuCtx, menu) => menuCtx.session.keyboardMenu = menu,
       beforeChange(changeCtx, country) {
@@ -70,12 +92,13 @@ function initCountryMenu(ctx) {
 }
 
 function initGenreMenu(ctx) {
-  new RadioMenu(
+  return new RadioMenu(
     {
       action: 'genre',
       message: 'Выберите жанр',
       filters: genreFilters,
       replaceable: true,
+      state: ctx.session.genre,
       menuGetter: (menuCtx) => menuCtx.session.keyboardMenu,
       menuSetter: (menuCtx, menu) => menuCtx.session.keyboardMenu = menu,
       beforeChange(changeCtx, genre) {
@@ -89,12 +112,13 @@ function initGenreMenu(ctx) {
 }
 
 function initSubGenreMenu(ctx) {
-  new RadioMenu(
+  return new RadioMenu(
     {
       action: 'genre',
       message: 'Выберите суб жанр',
       filters: subGenreFilters[ctx.session.genre],
       replaceable: true,
+      state: ctx.session.subGenre,
       menuGetter: (menuCtx) => menuCtx.session.keyboardMenu,
       menuSetter: (menuCtx, menu) => menuCtx.session.keyboardMenu = menu,
       beforeChange(changeCtx, subGenre) {
@@ -108,41 +132,33 @@ function initSubGenreMenu(ctx) {
 }
 
 async function searchRandomBand(ctx) {
-  const genre = ctx.session.subGenre === '' ? '' : genres[ctx.session.subGenre]
-  const countryCode = ctx.session.country
-  const iTotalRecords = await firstRequest(genre, countryCode)
-  const totalRecords = Math.floor(Math.random() * (1 + iTotalRecords - 1)) + 1
-  const randomBand = await recieveRandomBand(genre, countryCode, totalRecords)
+  const { randomBand } = await queryRandomBand(ctx)
   if (randomBand) {
     const bandId = randomBand[0].split('/')[5].split('">')[0]
-    await answerWithBand(ctx, bandId)
-    ctx.session.isRandom = true
+    await answerWithBand(ctx, bandId, true)
   } else {
     ctx.reply('Ничего не найдено')
   }
   await ctx.answerCbQuery()
 }
 
-async function recieveRandomBand(genre, countryCode, totalRecords) {
-  const { data } = await axios.get(`https://www.metal-archives.com/search/ajax-advanced/searching/bands/?bandName=&genre=${genre}&country=${countryCode}&yearCreationFrom=&yearCreationTo=&bandNotes=&status=&themes=&location=&bandLabelName=&sEcho=1&iColumns=3&sColumns=&iDisplayStart=${totalRecords}&iDisplayLength=1`)
-  return data.aaData[0]
-}
 
-async function firstRequest(genre, countryCode) {
-  const { data } = await axios.get(`https://www.metal-archives.com/search/ajax-advanced/searching/bands/?bandName=&genre=${genre}&country=${countryCode}&yearCreationFrom=&yearCreationTo=&bandNotes=&status=&themes=&location=&bandLabelName=&sEcho=1&iColumns=3&sColumns=&iDisplayStart=&iDisplayLength=1`)
-  return data.iTotalRecords
-}
 
 function clearRandomFilter(ctx) {
   ctx.session.worldSide = ''
   ctx.session.country = ''
   ctx.session.genre = ''
   ctx.session.subGenre = ''
+  ctx.session.bandStatus = ''
   initRandomMenu(ctx)
 }
 
+
 exports.initRandomMenu = initRandomMenu
 exports.initWorldSidesMenu = initWorldSidesMenu
+exports.initCountryMenu = initCountryMenu
 exports.initGenreMenu = initGenreMenu
+exports.initSubGenreMenu = initSubGenreMenu
+exports.initStatusMenu = initStatusMenu
 exports.clearRandomFilter = clearRandomFilter
 exports.searchRandomBand = searchRandomBand
