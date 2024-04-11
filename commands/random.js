@@ -42,7 +42,7 @@ function initStatusMenu(ctx) {
       menuGetter: (menuCtx) => menuCtx.session.keyboardMenu,
       menuSetter: (menuCtx, menu) => menuCtx.session.keyboardMenu = menu,
       beforeChange(changeCtx, bandStatus) {
-        changeCtx.session.bandStatus = bandStatus
+        bandStatus === 'clearStatusFilter' ? changeCtx.session.bandStatus = '' : changeCtx.session.bandStatus = bandStatus
       },
       onChange(submitCtx) {
         initRandomMenu(submitCtx)
@@ -62,10 +62,16 @@ function initWorldSidesMenu(ctx) {
       menuGetter: (menuCtx) => menuCtx.session.keyboardMenu,
       menuSetter: (menuCtx, menu) => menuCtx.session.keyboardMenu = menu,
       beforeChange(changeCtx, worldSide) {
-        changeCtx.session.worldSide = worldSide
+        if (worldSide === 'clearCountryFilter') {
+          changeCtx.session.worldSide = ''
+          changeCtx.session.country = ''
+        } else {
+          changeCtx.session.worldSide = worldSide
+        }
       },
-      onChange(submitCtx) {
-        initCountryMenu(submitCtx)
+      onChange(submitCtx, worldSide) {
+        if (worldSide !== 'clearCountryFilter') initCountryMenu(submitCtx)
+        else initRandomMenu(submitCtx)
       },
     },
   ).sendMenu(ctx)
@@ -102,10 +108,16 @@ function initGenreMenu(ctx) {
       menuGetter: (menuCtx) => menuCtx.session.keyboardMenu,
       menuSetter: (menuCtx, menu) => menuCtx.session.keyboardMenu = menu,
       beforeChange(changeCtx, genre) {
-        changeCtx.session.genre = genre
+        if (genre !== 'clearGenreFilter') {
+          changeCtx.session.genre = genre
+        } else {
+          changeCtx.session.genre = ''
+          changeCtx.session.subGenre = ''
+        }
       },
-      onChange(submitCtx) {
-        initSubGenreMenu(submitCtx)
+      onChange(submitCtx, genre) {
+        if (genre !== 'clearGenreFilter') initSubGenreMenu(submitCtx)
+        else initRandomMenu(submitCtx)
       },
     },
   ).sendMenu(ctx)

@@ -27,6 +27,9 @@ exports.genreFilters = [
     // new KeyboardButton('Heavy', 'heavy'),
     // new KeyboardButton('Power', 'power'),
   ],
+  [
+    new KeyboardButton('Убрать фильтр', 'clearGenreFilter'),
+  ],
 ]
 
 exports.subGenreFilters = {
@@ -92,6 +95,9 @@ exports.bandStatusFilters = [
     new KeyboardButton(bandStatusMapper['Changed name'], 5),
     new KeyboardButton(bandStatusMapper['Disputed'], 6),
   ],
+  [
+    new KeyboardButton('Убрать фильтр', 'clearStatusFilter'),
+  ],
 ]
 
 exports.worldSidesFilters = [
@@ -109,6 +115,9 @@ exports.worldSidesFilters = [
     new KeyboardButton('Африка', 'africa'),
     new KeyboardButton('СНГ', 'cis'),
     new KeyboardButton('Австралия', 'australia'),
+  ],
+  [
+    new KeyboardButton('Убрать фильтр', 'clearCountryFilter'),
   ],
 ]
 

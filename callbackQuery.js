@@ -1,15 +1,14 @@
 const cheerio = require('cheerio')
 const axios = require('axios')
 const { Markup } = require('telegraf')
-const _ = require('lodash')
 
-const { getBand, getBandDiscography } = require('./commands/searchBand')
+const { getBand, getBandDiscography, getBandLinks } = require('./commands/searchBand')
 const { getAlbumbyId } = require('./commands/searchAlbum')
 
 const { toggleLike, checkLikedAlbum } = require('./db/like')
 
 const { genres } = require('./utils/const')
-const { getFormattedBandText, prepareNames } = require('./utils/helpers')
+const { getFormattedBandText } = require('./utils/helpers')
 
 
 const NO_IMAGE_URL = 'https://business-click.it/images/portfolio/cappelledelcommiatofirenze.png'
@@ -51,31 +50,35 @@ async function queryRandomBand(ctx) {
   const bandStatus = ctx.session.bandStatus
   const iTotalRecords = await firstRequest(genre, countryCode, bandStatus)
   const totalRecords = Math.floor(Math.random() * (1 + iTotalRecords - 1)) + 1
-  const randomBand = await recieveRandomBand(genre, countryCode, bandStatus, totalRecords)
+  const randomBand = await recieveRandomBand(genre, countryCode, bandStatus, totalRecords - 1)
 
   return { genre, countryCode, iTotalRecords, randomBand }
 }
 
 async function answerWithAlbum(ctx, albumId) {
   const { data } = await getAlbumbyId(albumId)
-  const { bandId, bandName, albumName, type, releaseDate, label, format, limit, cover, tracklist } = parseAlbumInfo(data)
+  const { bandId, bandName, albumName, albumLink, type, releaseDate, label, format, limit, cover, tracklist } = parseAlbumInfo(data)
 
   const album = {
-    bandId, albumId, bandName, albumName, type, releaseDate, label, format, limit, cover, tracklist
+    bandId, albumId, bandName, albumName, albumLink, type, releaseDate, label, format, limit, cover, tracklist
   }
 
-  const albumExistInCurrentChatId = await checkLikedAlbum(ctx, albumId)
-
-  replyAlbumWithPhoto(ctx, album, albumExistInCurrentChatId)
+  replyAlbumWithPhoto(ctx, album)
 }
 
 
 async function answerWithBand(ctx, bandId, isRandom = true) {
   const { data } = await getBand(bandId)
   const { name, genre, country, location, themes, status, label, formYear, yearsActive, photoUrl, logoUrl } = parseBandInfo(data)
+
   const discography = await parseDiscography(bandId)
 
+  const linksHtml = await getBandLinks(bandId)
+  const { bandcampUrl } = parseBandLinks(linksHtml.data)
+
   const inlineKeyboard = await buildKeyboardDiscography(ctx, discography)
+
+  if (bandcampUrl) inlineKeyboard.push([Markup.button.url(`Bandcamp`, bandcampUrl)])
 
   if (isRandom) inlineKeyboard.push([Markup.button.callback(`Повторить`, `repeatRandomBand`)])
 
@@ -86,20 +89,15 @@ async function answerWithBand(ctx, bandId, isRandom = true) {
   replyBandWithPhoto(ctx, band, inlineKeyboard)
 }
 
-function replyAlbumWithPhoto(ctx, album, albumExistInCurrentChatId) {
+function replyAlbumWithPhoto(ctx, album) {
   const cover = album.cover ? album.cover : NO_IMAGE_URL
   const inlineKeyboard = [
     [Markup.button.callback(`⬅️ к альбомам`, `getBand|${album.bandId}`)],
   ]
 
-  if (albumExistInCurrentChatId) {
-    inlineKeyboard.push([Markup.button.callback(`👎 не нравится`, `like|${album.albumId}`)])
-  } else {
-    inlineKeyboard.push([Markup.button.callback(`👍 нравится`, `like|${album.albumId}`)])
-  }
   if (album.tracklist.length > 22) {
     album.tracklist.splice(22, album.tracklist.length - 1,
-      `\nВесь треклист не влез в ограничения телеграмма, полная версия тут \nhttps://www.metal-archives.com/albums/${prepareNames(album.bandName)}/${prepareNames(album.albumName)}/${album.albumId}`)
+      `\nВесь треклист не влез в ограничения телеграмма, полная версия тут \n${album.albumLink}`)
   }
   ctx.replyWithPhoto({ url: cover }, {
     caption:
@@ -149,16 +147,25 @@ async function firstRequest(genre, countryCode, bandStatus) {
 
 async function buildKeyboardDiscography(ctx, discography) {
   const inlineKeyboard = []
-  _.chunk(discography, 2).forEach((chunk) => {
-    const temp = []
-    chunk.map((album) => {
-      temp.push(Markup.button.callback(`[${album.year}] ${album.name} - ${album.type}`, `getAlbum|${album.id}`))
-    })
-    inlineKeyboard.push(temp)
+  discography.forEach((album) => {
+    inlineKeyboard.push([Markup.button.callback(`[${album.year}] ${album.name} - ${album.type}`, `getAlbum|${album.id}`)])
   })
 
-  // console.log(inlineKeyboard)
   return inlineKeyboard
+}
+
+function parseBandLinks(html) {
+  const $ = cheerio.load(html)
+
+  let bandcampUrl = null
+
+  $('#linksTablemain tr').children().map((index, el) => {
+    if (el.children[0].attribs?.title === 'Go to: Bandcamp') {
+      bandcampUrl = el.children[0].attribs?.href
+    }
+  })
+
+  return { bandcamp: bandcampUrl }
 }
 
 function parseAlbumInfo(html) {
@@ -166,6 +173,7 @@ function parseAlbumInfo(html) {
   const bandId = $('.band_name a').attr('href').split('/').pop()
   const bandName = $('.band_name a').text()
   const albumName = $('.album_name a').text()
+  const albumLink = $('.album_name a').attr('href')
   const type = $('#album_info .float_left dd').eq(0).text()
   const releaseDate = $('#album_info .float_left dd').eq(1).text()
   const label = $('#album_info .float_right dd').eq(0).text()
@@ -182,7 +190,7 @@ function parseAlbumInfo(html) {
       tracklist.push(`${track.children().eq(0).text().trim()} ${track.children().eq(1).text().trim()} (${track.children().eq(2).text().trim()})\n`)
     }
   }
-  return { bandId, bandName, albumName, type, releaseDate, label, format, limit, cover, tracklist }
+  return { bandId, bandName, albumName, albumLink, type, releaseDate, label, format, limit, cover, tracklist }
 }
 
 function parseBandInfo(html) {

@@ -39,6 +39,21 @@ exports.searchBand = async (ctx) => {
   }
 }
 
+exports.getBandLinks = async (bandId, retries = 3) => {
+  try {
+    return await axios.get(`https://www.metal-archives.com/link/ajax-list/type/band/id/${bandId}`, axiosOptions)
+  } catch (e) {
+    if (retries > 0) {
+      console.log(`Retrying... attempts left: ${retries - 1}`)
+      await new Promise(resolve => setTimeout(resolve, 1000)) // Wait for 1 second before retrying
+      return getBandLinks(bandId, retries - 1)
+    } else {
+      throw new Error(TIMEOUT_ERROR)
+    }
+  }
+}
+
+
 exports.getRandomBand = async (retries = 3) => {
   try {
     return await axios.get('https://www.metal-archives.com/band/random', axiosOptions)

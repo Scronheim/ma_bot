@@ -18,13 +18,6 @@ const {
 
 const token = process.env.TELEGRAM_BOT_TOKEN // https://t.me/EncyclopaediaMetallum_bot
 const session = new LocalSession({ database: 'local.db.json' })
-const db = require('./db/index.schema')
-
-db.mongoose.connect('mongodb://localhost:27017/ma_bot', {
-    authSource: 'admin',
-    user: 'scronheim',
-    pass: 'it!admin*0',
-})
 
 const startBot = async () => {
     const bot = new Telegraf(token)
