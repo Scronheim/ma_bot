@@ -1,5 +1,5 @@
 {
-  "name": "metal-archives-bot",
+  "name": "metal-library-bot",
   "version": "1.0.0",
   "dependencies": {
     "axios": "^1.2.3",
