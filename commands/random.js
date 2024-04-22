@@ -144,13 +144,10 @@ function initSubGenreMenu(ctx) {
 }
 
 async function searchRandomBand(ctx) {
-  const { randomBand } = await queryRandomBand(ctx)
-  if (randomBand) {
-    const bandId = randomBand[0].split('/')[5].split('">')[0]
-    await answerWithBand(ctx, bandId, true)
-  } else {
-    ctx.reply('Ничего не найдено')
-  }
+  const [randomBand] = await queryRandomBand(ctx)
+
+  await answerWithBand(ctx, randomBand)
+
   await ctx.answerCbQuery()
 }
 

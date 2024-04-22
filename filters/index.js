@@ -24,8 +24,8 @@ exports.genreFilters = [
   ],
   [
     new KeyboardButton('Gothic', 'gothic'),
-    // new KeyboardButton('Heavy', 'heavy'),
-    // new KeyboardButton('Power', 'power'),
+    new KeyboardButton('Heavy', 'heavy'),
+    new KeyboardButton('Power', 'power'),
   ],
   [
     new KeyboardButton('Убрать фильтр', 'clearGenreFilter'),
@@ -82,6 +82,16 @@ exports.subGenreFilters = {
       new KeyboardButton('Gothic rock', 'gothicRock'),
     ],
   ],
+  heavy: [
+    [
+      new KeyboardButton('Heavy metal', 'heavyMetal'),
+    ],
+  ],
+  power: [
+    [
+      new KeyboardButton('Power metal', 'powerMetal'),
+    ],
+  ],
 }
 
 exports.bandStatusFilters = [
@@ -124,131 +134,131 @@ exports.worldSidesFilters = [
 exports.countriesFilters = {
   'eastAsia': [
     [
-      new KeyboardButton('Китай', 'CN'),
-      new KeyboardButton('Япония', 'JP'),
-      new KeyboardButton('Монголия', 'MN'),
+      new KeyboardButton('Китай', 'China'),
+      new KeyboardButton('Япония', 'Japan'),
+      new KeyboardButton('Монголия', 'Mongolia'),
     ],
     [
-      new KeyboardButton('Северная Корея', 'KP'),
-      new KeyboardButton('Южная Корея', 'KR'),
-      new KeyboardButton('Тайвань', 'TW'),
+      new KeyboardButton('Северная Корея', 'North Korea'),
+      new KeyboardButton('Южная Корея', 'South Korea'),
+      new KeyboardButton('Тайвань', 'Taiwan'),
     ],
   ],
   'southAmerica': [
     [
-      new KeyboardButton('Аргентина', 'AR'),
-      new KeyboardButton('Боливия', 'BO'),
-      new KeyboardButton('Бразилия', 'BR'),
+      new KeyboardButton('Аргентина', 'Argentina'),
+      new KeyboardButton('Боливия', 'Bolivia'),
+      new KeyboardButton('Бразилия', 'Brazil'),
     ],
     [
-      new KeyboardButton('Венесуэла', 'VE'),
-      new KeyboardButton('Гайана', 'GY'),
-      new KeyboardButton('Колумбия', 'CO'),
+      new KeyboardButton('Венесуэла', 'Venezuela'),
+      new KeyboardButton('Гайана', 'Guyana'),
+      new KeyboardButton('Колумбия', 'Colombia'),
     ],
     [
-      new KeyboardButton('Парагвай', 'PY'),
-      new KeyboardButton('Перу', 'PE'),
-      new KeyboardButton('Суринам', 'SR'),
+      new KeyboardButton('Парагвай', 'Paraguay'),
+      new KeyboardButton('Перу', 'Peru'),
+      new KeyboardButton('Суринам', 'Suriname'),
     ],
     [
-      new KeyboardButton('Уругвай', 'UY'),
-      new KeyboardButton('Фолклендские острова', 'FK'),
-      new KeyboardButton('Гвиана (Франция)', 'GF'),
+      new KeyboardButton('Уругвай', 'Uruguay'),
+      new KeyboardButton('Фолклендские острова', 'Folkland Isnlands'),
+      new KeyboardButton('Гвиана (Франция)', 'French Guiana'),
     ],
     [
-      new KeyboardButton('Чили', 'CL'),
-      new KeyboardButton('Эквадор', 'EC'),
-      new KeyboardButton('Южная Георгия и Южные Сандвичевы Острова (Великобритания)', 'GS'),
+      new KeyboardButton('Чили', 'Chile'),
+      new KeyboardButton('Эквадор', 'Ecuador'),
+      new KeyboardButton('Южная Георгия и Южные Сандвичевы Острова (Великобритания)', 'South Georgia & South Sandwich Islands'),
     ],
   ],
   'northAmerica': [
     [
-      new KeyboardButton('Канада', 'CA'),
-      new KeyboardButton('США', 'US'),
-      new KeyboardButton('Мексика', 'MX'),
+      new KeyboardButton('Канада', 'Canada'),
+      new KeyboardButton('США', 'United States'),
+      new KeyboardButton('Мексика', 'Mexico'),
     ],
   ],
   'australia': [
     [
-      new KeyboardButton('Австралия', 'AU'),
+      new KeyboardButton('Австралия', 'Australia'),
     ],
   ],
   'cis': [
     [
-      new KeyboardButton('Россия', 'RU'),
-      new KeyboardButton('Украина', 'UA'),
-      new KeyboardButton('Беларусь', 'BY'),
+      new KeyboardButton('Россия', 'Russia'),
+      new KeyboardButton('Украина', 'Ukraine'),
+      new KeyboardButton('Беларусь', 'Belarus'),
     ],
     [
-      new KeyboardButton('Азербайджан', 'AZ'),
-      new KeyboardButton('Казахстан', 'KZ'),
-      new KeyboardButton('Молдавия', 'MD'),
+      new KeyboardButton('Азербайджан', 'Azerbaijan'),
+      new KeyboardButton('Казахстан', 'Kazakhstan'),
+      new KeyboardButton('Молдавия', 'Moldavia'),
     ],
     [
-      new KeyboardButton('Кыргызстан', 'KG'),
-      new KeyboardButton('Таджикистан', 'TJ'),
-      new KeyboardButton('Узбекистан', 'UZ'),
+      new KeyboardButton('Кыргызстан', 'Kyrgyzstan'),
+      new KeyboardButton('Таджикистан', 'Tajikistan'),
+      new KeyboardButton('Узбекистан', 'Uzbekistan'),
     ],
   ],
   'scandinavia': [
     [
-      new KeyboardButton('Норвегия', 'NO'),
-      new KeyboardButton('Швеция', 'SE'),
-      new KeyboardButton('Финляндия', 'FI'),
+      new KeyboardButton('Норвегия', 'Norway'),
+      new KeyboardButton('Швеция', 'Sweden'),
+      new KeyboardButton('Финляндия', 'Finland'),
     ],
   ],
   'britishIslands': [
     [
-      new KeyboardButton('Соединенное королевство', 'GB'),
-      new KeyboardButton('Ирландия', 'IE'),
+      new KeyboardButton('Соединенное королевство', 'United Kingdom'),
+      new KeyboardButton('Ирландия', 'Ireland'),
     ],
   ],
   'balkans': [
     [
-      new KeyboardButton('Албания', 'AL'),
-      new KeyboardButton('Болгария', 'BG'),
-      new KeyboardButton('Босния и Герцеговина', 'BA'),
+      new KeyboardButton('Албания', 'Albania'),
+      new KeyboardButton('Болгария', 'Bulgaria'),
+      new KeyboardButton('Босния и Герцеговина', 'Bosnia and Herzegovina'),
     ],
     [
-      new KeyboardButton('Греция', 'GR'),
-      new KeyboardButton('Румыния', 'RO'),
-      new KeyboardButton('Северная Македония', 'MK'),
+      new KeyboardButton('Греция', 'Greece'),
+      new KeyboardButton('Румыния', 'Romania'),
+      new KeyboardButton('Северная Македония', 'North Macedonia'),
     ],
     [
-      new KeyboardButton('Сербия', 'RS'),
-      new KeyboardButton('Словения', 'SI'),
-      new KeyboardButton('Турция', 'TR'),
+      new KeyboardButton('Сербия', 'Serbia'),
+      new KeyboardButton('Словения', 'Slovenia'),
+      new KeyboardButton('Турция', 'Türkiye'),
     ],
     [
-      new KeyboardButton('Хорватия', 'HR'),
-      new KeyboardButton('Черногория', 'ME'),
+      new KeyboardButton('Хорватия', 'Croatia'),
+      new KeyboardButton('Черногория', 'Montenegro'),
     ],
   ],
   'africa': [
     [
-      new KeyboardButton('Алжир', 'DZ'),
-      new KeyboardButton('Ангола', 'AO'),
-      new KeyboardButton('Бенин', 'BJ'),
+      new KeyboardButton('Алжир', 'Algeria'),
+      new KeyboardButton('Ангола', 'Angola'),
+      new KeyboardButton('Бенин', 'Benin'),
     ],
     [
-      new KeyboardButton('Ботсвана', 'BW'),
-      new KeyboardButton('Буркина Фасо', 'BF'),
-      new KeyboardButton('Бурунди', 'BI'),
+      new KeyboardButton('Ботсвана', 'Botswana'),
+      new KeyboardButton('Буркина Фасо', 'Burkina Faso'),
+      new KeyboardButton('Бурунди', 'Burundi'),
     ],
     [
-      new KeyboardButton('Камерун', 'CM'),
-      new KeyboardButton('Центральноафриканская Республика', 'CF'),
-      new KeyboardButton('Чад', 'TD'),
+      new KeyboardButton('Камерун', 'Cameroon'),
+      new KeyboardButton('Центральноафриканская Республика', 'Central African Republic'),
+      new KeyboardButton('Чад', 'Chad'),
     ],
     [
-      new KeyboardButton('Комора', 'KM'),
-      new KeyboardButton('Джибути', 'DJ'),
-      new KeyboardButton('Египет', 'EG'),
+      new KeyboardButton('Комора', 'Comoros'),
+      new KeyboardButton('Джибути', 'Djibouti'),
+      new KeyboardButton('Египет', 'Egypt'),
     ],
     [
-      new KeyboardButton('Демократическая республика Конго', 'CD'),
-      new KeyboardButton('Республика Конго', 'CG'),
-      new KeyboardButton('Экваториальная Гвинея', 'GQ'),
+      new KeyboardButton('Демократическая республика Конго', 'Congo, Democratic Republic of'),
+      new KeyboardButton('Республика Конго', 'Congo, Republic of'),
+      new KeyboardButton('Экваториальная Гвинея', 'Equatorial Guinea'),
     ],
   ]
 }

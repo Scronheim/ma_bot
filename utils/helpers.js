@@ -12,11 +12,11 @@ exports.formatSelectedFilters = (ctx) => {
 
 exports.getFormattedBandText = (band) => {
   return `
-<b>Группа</b>: ${band.name}
+<b>Группа</b>: ${band.title}
 <b>Жанр</b>: ${band.genre}
-<b>Страна</b>: ${countryFlagsMapper[band.country]} ${band.country} (${band.location})
-<b>Темы текстов</b>: ${band.themes}
-<b>Год образования</b>: ${band.formYear}
+<b>Страна</b>: ${countryFlagsMapper[band.country]} ${band.country} (${band.city})
+<b>Темы текстов</b>: ${band.lyricsTheme}
+<b>Год образования</b>: ${band.formedIn}
 <b>Годы активности</b>: ${band.yearsActive}
 <b>Статус</b>: ${bandStatusMapper[band.status]}
 <b>Лейбл</b>: ${band.label}
