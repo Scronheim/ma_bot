@@ -96,14 +96,14 @@ exports.subGenreFilters = {
 
 exports.bandStatusFilters = [
   [
-    new KeyboardButton(bandStatusMapper['Active'], 1),
-    new KeyboardButton(bandStatusMapper['On hold'], 2),
-    new KeyboardButton(bandStatusMapper['Split-up'], 3),
+    new KeyboardButton(bandStatusMapper['Active'], 'Active'),
+    new KeyboardButton(bandStatusMapper['On hold'], 'On hold'),
+    new KeyboardButton(bandStatusMapper['Split-up'], 'Split-up'),
   ],
   [
-    new KeyboardButton(bandStatusMapper['Unknown'], 4),
-    new KeyboardButton(bandStatusMapper['Changed name'], 5),
-    new KeyboardButton(bandStatusMapper['Disputed'], 6),
+    new KeyboardButton(bandStatusMapper['Unknown'], 'Unknown'),
+    new KeyboardButton(bandStatusMapper['Changed name'], 'Changed name'),
+    new KeyboardButton(bandStatusMapper['Disputed'], 'Disputed'),
   ],
   [
     new KeyboardButton('Убрать фильтр', 'clearStatusFilter'),

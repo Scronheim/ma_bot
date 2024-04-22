@@ -57,7 +57,7 @@ exports.getRandomBand = async (retries = 3) => {
 
 exports.getBand = async (bandId, retries = 3) => {
   try {
-    return await axios.get(`${API_URL}/api/bands?id=${bandId}`, axiosOptions)
+    return await axios.get(`${API_URL}/bands?id=${bandId}`, axiosOptions)
   } catch (e) {
     if (retries > 0) {
       console.log(`Retrying... attempts left: ${retries - 1}`)
@@ -71,7 +71,7 @@ exports.getBand = async (bandId, retries = 3) => {
 
 async function searchByBandName(bandName, retries = 3) {
   try {
-    return await axios.get(`${API_URL}/api/search/bands?q=${bandName}`, axiosOptions)
+    return await axios.get(`${API_URL}/search/bands?q=${bandName}`, axiosOptions)
   } catch (e) {
     if (retries > 0) {
       console.log(`Retrying... attempts left: ${retries - 1}`)

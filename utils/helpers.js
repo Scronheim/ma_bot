@@ -6,7 +6,7 @@ exports.formatSelectedFilters = (ctx) => {
 Регион: ${worldSides[ctx.session.worldSide]}
 Страна: ${countries[ctx.session.country]}
 Жанр: ${genres[ctx.session.subGenre]}
-Статус: ${bandStatus[ctx.session.bandStatus]}
+Статус: ${bandStatusMapper[ctx.session.bandStatus]}
 `
 }
 

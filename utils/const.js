@@ -1,7 +1,7 @@
 const https = require('https')
 
-exports.API_URL = 'http://185.125.202.224:3000'
-exports.WEB_URL = 'http://185.125.202.224'
+exports.BASE_URL = 'https://metal-library.com'
+exports.API_URL = `${this.BASE_URL}/api`
 
 exports.countryFlagsMapper = {
   Russia: '🇷🇺',
@@ -60,6 +60,8 @@ exports.countryFlagsMapper = {
   Chile: '🇨🇱',
   Colombia: '🇨🇴',
   Indonesia: '🇮🇩',
+  Peru: '🇵🇪',
+  Czechia: '🇨🇿',
   'Korea, South': '🇰🇷',
   'Korea, North': '🇰🇵',
 }
@@ -85,13 +87,10 @@ exports.bandStatusMapper = {
 }
 
 exports.axiosOptions = {
-  httpsAgent: new https.Agent({
-    rejectUnauthorized: false
-  }),
   timeout: 3000,
-  headers: {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0'
-  }
+  // headers: {
+  //   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0'
+  // }
 }
 
 exports.worldSides = {

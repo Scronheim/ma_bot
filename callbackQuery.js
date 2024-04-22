@@ -2,11 +2,10 @@ const axios = require('axios')
 const { Markup } = require('telegraf')
 
 const { getBand } = require('./commands/searchBand')
-const { getAlbumbyId } = require('./commands/searchAlbum')
 
 const { toggleLike, checkLikedAlbum } = require('./db/like')
 
-const { genres, WEB_URL, API_URL } = require('./utils/const')
+const { genres, BASE_URL, API_URL } = require('./utils/const')
 const { getFormattedBandText } = require('./utils/helpers')
 
 
@@ -50,6 +49,7 @@ async function queryRandomBand(ctx) {
   const genre = ctx.session.subGenre === '' ? '' : genres[ctx.session.subGenre]
   const country = ctx.session.country
   const status = ctx.session.bandStatus
+
   const band = await firstRequest(genre, country, status)
 
   return band
@@ -66,14 +66,15 @@ async function getBandById(ctx, bandId) {
 }
 
 async function answerWithBand(ctx, band, isRandom = true) {
+  ctx.session.currentBand = { ...band }
   const inlineKeyboard = await buildKeyboardDiscography(band)
 
   if (band.socials) {
-    if (band.socials.bandcamp) inlineKeyboard.push([Markup.button.url(`Bandcamp`, band.socials.bandcamp)])
+    parseAllLinks(band.socials, inlineKeyboard)
   }
 
-  if (isRandom) inlineKeyboard.push([Markup.button.callback(`Повторить`, `repeatRandomBand`)])
-  ctx.session.currentBand = band
+  if (isRandom) inlineKeyboard.push([Markup.button.callback(`Следующая группа`, `repeatRandomBand`)])
+
   replyBandWithPhoto(ctx, band, inlineKeyboard)
 }
 
@@ -82,6 +83,16 @@ function replyAlbumWithPhoto(ctx, album) {
   const inlineKeyboard = [
     [Markup.button.callback(`⬅️ к альбомам`, `getSavedBand`)],
   ]
+
+  parseAllLinks(album.links, inlineKeyboard)
+
+
+  album.links.download.forEach(link => {
+    const bitrate = link.flac ? 'FLAC' : `${link.bitrate}kbps`
+    inlineKeyboard.push(
+      [Markup.button.url(`Скачать ${bitrate} (${new URL(link.src).hostname})`, link.src)],
+    )
+  })
 
   if (album.tracks.length > 22) {
     album.tracks.splice(22, album.tracks.length - 1,
@@ -103,6 +114,12 @@ ${normalizeTracklist(album.tracks)}
       inline_keyboard: inlineKeyboard,
     }
   })
+}
+
+function parseAllLinks(links, inlineKeyboard) {
+  if (links.bandcamp) inlineKeyboard.push([Markup.button.url('Bandcamp', links.bandcamp)])
+  if (links.yaMusic) inlineKeyboard.push([Markup.button.url('Yandex Music', links.yaMusic)])
+  if (links.spotify) inlineKeyboard.push([Markup.button.url('Spotify', links.spotify)])
 }
 
 function normalizeTracklist(tracks) {
@@ -144,13 +161,15 @@ function replyBandWithPhoto(ctx, band, inlineKeyboard) {
 }
 
 async function firstRequest(genre, country, status) {
-  const { data } = await axios.get(`${API_URL}/api/search/bands/random?country=${country}&genre=${genre}&status=${status}`)
+  const { data } = await axios.get(`${API_URL}/search/bands/random?country=${country}&genre=${genre}&status=${status}`)
   return data.data
 }
 
 async function buildKeyboardDiscography(band) {
   const inlineKeyboard = []
+  const initialAlbumsNumber = band.albums.length
   let addSiteUrlButton = false
+
   if (band.albums.length > 30) {
     band.albums = band.albums.slice(0, 30)
     addSiteUrlButton = true
@@ -161,7 +180,7 @@ async function buildKeyboardDiscography(band) {
   })
 
   if (addSiteUrlButton) {
-    inlineKeyboard.push([Markup.button.url('Остальные альбомы смотри на сайте', `${WEB_URL}/bands/${band._id}`)])
+    inlineKeyboard.push([Markup.button.url(`Остальные альбомы (${initialAlbumsNumber - 30}) смотри на сайте`, `${BASE_URL}/#/bands/${band._id}`)])
   }
 
   return inlineKeyboard
