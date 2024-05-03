@@ -180,16 +180,18 @@ async function buildKeyboardDiscography(band) {
   }
   band.albums.forEach((album) => {
     let formattedYear = ''
-    const format1 = dayjs(album.releaseDate, 'MMMM DD[th], YYYY').format('YYYY')
-    const format2 = dayjs(album.releaseDate, 'MMMM YYYY').format('YYYY')
+    const format1 = dayjs(album.releaseDate, 'MMMM D[th], YYYY').format('YYYY')
+    const format2 = dayjs(album.releaseDate, 'MMMM D[rd], YYYY').format('YYYY')
     const format3 = dayjs(album.releaseDate, 'YYYY-MM-DD').format('YYYY')
+    const format4 = dayjs(album.releaseDate, 'MMMM YYYY').format('YYYY')
 
-    if (format1 !== 'Invalid Date') formattedYear = `[${format1}]`
-    else if (format2 !== 'Invalid Date') formattedYear = `[${format2}]`
-    else if (format3 !== 'Invalid Date') formattedYear = `[${format3}]`
-    else formattedYear = `[${album.releaseDate}]`
+    if (format1 !== 'Invalid Date') formattedYear = format1
+    else if (format2 !== 'Invalid Date') formattedYear = format2
+    else if (format3 !== 'Invalid Date') formattedYear = format3
+    else if (format4 !== 'Invalid Date') formattedYear = format4
+    else formattedYear = album.releaseDate
 
-    inlineKeyboard.push([Markup.button.callback(`${formattedYear} ${album.title} - ${album.type}`, `getAlbum|${album._id}`)])
+    inlineKeyboard.push([Markup.button.callback(`[${formattedYear}] ${album.title} - ${album.type}`, `getAlbum|${album._id}`)])
   })
 
   if (addSiteUrlButton) {
