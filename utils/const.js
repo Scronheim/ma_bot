@@ -1,6 +1,6 @@
 const https = require('https')
 
-exports.BASE_URL = 'https://metal-library.com'
+exports.BASE_URL = 'https://metal-library.com/'
 exports.API_URL = `${this.BASE_URL}/api`
 
 exports.countryFlagsMapper = {
@@ -62,6 +62,7 @@ exports.countryFlagsMapper = {
   Indonesia: '🇮🇩',
   Peru: '🇵🇪',
   Czechia: '🇨🇿',
+  Portugal: '🇵🇹',
   'Korea, South': '🇰🇷',
   'Korea, North': '🇰🇵',
 }

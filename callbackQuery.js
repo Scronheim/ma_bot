@@ -1,12 +1,16 @@
 const axios = require('axios')
 const { Markup } = require('telegraf')
+const dayjs = require('dayjs')
+const customParseFormat = require('dayjs/plugin/customParseFormat')
+
+dayjs.extend(customParseFormat)
 
 const { getBand } = require('./commands/searchBand')
 
 const { toggleLike, checkLikedAlbum } = require('./db/like')
 
 const { genres, BASE_URL, API_URL } = require('./utils/const')
-const { getFormattedBandText } = require('./utils/helpers')
+const { getFormattedBandText, checkAdmin } = require('./utils/helpers')
 
 
 const NO_IMAGE_URL = 'https://business-click.it/images/portfolio/cappelledelcommiatofirenze.png'
@@ -90,13 +94,13 @@ function replyAlbumWithPhoto(ctx, album) {
   album.links.download.forEach(link => {
     const bitrate = link.flac ? 'FLAC' : `${link.bitrate}kbps`
     inlineKeyboard.push(
-      [Markup.button.url(`Скачать ${bitrate} (${new URL(link.src).hostname})`, link.src)],
+      [Markup.button.url(`Скачать ${bitrate} (${new URL(link.src).hostname.replace('www.', '')})`, link.src)],
     )
   })
 
   if (album.tracks.length > 22) {
     album.tracks.splice(22, album.tracks.length - 1,
-      `\nВесь треклист не влез в ограничения телеграмма, полная версия тут \n ${WEB_URL}/albums/${album._id}`)
+      `\nВесь треклист не влез в ограничения телеграмма, полная версия тут \n ${BASE_URL}/albums/${album._id}`)
   }
   ctx.replyWithPhoto({ url: cover }, {
     caption:
@@ -175,8 +179,17 @@ async function buildKeyboardDiscography(band) {
     addSiteUrlButton = true
   }
   band.albums.forEach((album) => {
-    const albumYear = album.releaseDate.slice(-4)
-    inlineKeyboard.push([Markup.button.callback(`[${albumYear}] ${album.title} - ${album.type}`, `getAlbum|${album._id}`)])
+    let formattedYear = ''
+    const format1 = dayjs(album.releaseDate, 'MMMM DD[th], YYYY').format('YYYY')
+    const format2 = dayjs(album.releaseDate, 'MMMM YYYY').format('YYYY')
+    const format3 = dayjs(album.releaseDate, 'YYYY-MM-DD').format('YYYY')
+
+    if (format1 !== 'Invalid Date') formattedYear = `[${format1}]`
+    else if (format2 !== 'Invalid Date') formattedYear = `[${format2}]`
+    else if (format3 !== 'Invalid Date') formattedYear = `[${format3}]`
+    else formattedYear = `[${album.releaseDate}]`
+
+    inlineKeyboard.push([Markup.button.callback(`${formattedYear} ${album.title} - ${album.type}`, `getAlbum|${album._id}`)])
   })
 
   if (addSiteUrlButton) {

@@ -26,3 +26,7 @@ exports.getFormattedBandText = (band) => {
 exports.prepareNames = (name) => {
   return name.replaceAll(' ', '_').replaceAll('/', '')
 }
+
+exports.checkAdmin = (telegramUserId) => {
+  return [423754317].includes(telegramUserId)
+}

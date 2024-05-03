@@ -16,7 +16,7 @@ const {
     initStatusMenu,
 } = require('./commands/random')
 
-const token = process.env.TELEGRAM_BOT_TOKEN // https://t.me/EncyclopaediaMetallum_bot
+const token = process.env.TELEGRAM_BOT_TOKEN // https://t.me/metal_Library_bot
 const session = new LocalSession({ database: 'local.db.json' })
 
 const startBot = async () => {
@@ -26,6 +26,7 @@ const startBot = async () => {
         ctx.tg.sendMessage(423754317, error.toString()) // @scronheim chat id
         console.log(error)
     })
+
     //======= MIDDLEWARES =======
     bot.use(session.middleware())
     bot.use(GenericMenu.middleware())
