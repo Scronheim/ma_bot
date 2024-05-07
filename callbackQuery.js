@@ -45,7 +45,7 @@ exports.callbackQuery = async (ctx) => {
 }
 
 async function answerWithRepeatedRandomBand(ctx) {
-  const [randomBand] = await queryRandomBand(ctx)
+  const randomBand = await queryRandomBand(ctx)
   await answerWithBand(ctx, randomBand)
 }
 

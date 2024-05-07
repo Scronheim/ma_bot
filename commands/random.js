@@ -144,7 +144,7 @@ function initSubGenreMenu(ctx) {
 }
 
 async function searchRandomBand(ctx) {
-  const [randomBand] = await queryRandomBand(ctx)
+  const randomBand = await queryRandomBand(ctx)
 
   await answerWithBand(ctx, randomBand)
 
